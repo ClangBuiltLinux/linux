@@ -261,14 +261,27 @@ config PHYS_OFFSET
 	depends on !ARM_PATCH_PHYS_VIRT
 	default DRAM_BASE if !MMU
 	default 0x00000000 if ARCH_EBSA110 || \
+			ARCH_DOVE || \
 			ARCH_FOOTBRIDGE || \
+			(ARCH_GEMINI && GEMINI_MEM_SWAP) || \
 			ARCH_INTEGRATOR || \
+			ARCH_IOP33X || \
 			ARCH_IOP13XX || \
+			ARCH_IXP4XX || \
 			ARCH_KS8695 || \
-			ARCH_REALVIEW
-	default 0x10000000 if ARCH_OMAP1 || ARCH_RPC
+			ARCH_W90X900
+	default 0x10000000 if (ARCH_GEMINI && !GEMINI_MEM_SWAP) || \
+			ARCH_OMAP1 || \
+			ARCH_RPC
 	default 0x20000000 if ARCH_S5PV210
-	default 0xc0000000 if ARCH_SA1100
+	default 0x30000000 if ARCH_S3C24XX
+	default 0x80000000 if (ARCH_DAVINCI_DMx && !ARCH_DAVINCI_DA8XX) || \
+			ARCH_NETX || \
+			ARCH_LPC32XX
+	default 0xa0000000 if ARCH_IOP32X || ARCH_PXA
+	default 0xc0000000 if (ARCH_DAVINCI_DA8XX && !ARCH_DAVINCI_DMx) || \
+			ARCH_CLPS711X || \
+			ARCH_SA1100
 	help
 	  Please provide the physical address corresponding to the
 	  location of main memory in your system.
