@@ -949,7 +949,7 @@ static void gic_raise_softirq(const struct cpumask *mask, unsigned int irq)
 	isb();
 }
 
-static void gic_smp_init(void)
+static void __init gic_smp_init(void)
 {
 	set_smp_cross_call(gic_raise_softirq);
 	cpuhp_setup_state_nocalls(CPUHP_AP_IRQ_GIC_STARTING,
@@ -1023,7 +1023,7 @@ static struct notifier_block gic_cpu_pm_notifier_block = {
 	.notifier_call = gic_cpu_pm_notifier,
 };
 
-static void gic_cpu_pm_init(void)
+static void __init gic_cpu_pm_init(void)
 {
 	cpu_pm_register_notifier(&gic_cpu_pm_notifier_block);
 }
