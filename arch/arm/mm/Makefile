@@ -101,7 +101,7 @@ obj-$(CONFIG_CPU_V7)		+= proc-v7.o proc-v7-bugs.o
 obj-$(CONFIG_CPU_V7M)		+= proc-v7m.o
 
 AFLAGS_proc-v6.o	:=-Wa,-march=armv6
-AFLAGS_proc-v7.o	:=-Wa,-march=armv7-a
+AFLAGS_proc-v7.o	:=-Wa,-march=armv7-a -no-integrated-as
 
 obj-$(CONFIG_OUTER_CACHE)	+= l2c-common.o
 obj-$(CONFIG_CACHE_B15_RAC)	+= cache-b15-rac.o

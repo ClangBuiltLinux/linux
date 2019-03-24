@@ -32,6 +32,9 @@ else
 obj-y		+= entry-armv.o
 endif
 
+AFLAGS_sleep.o   += -no-integrated-as
+AFLAGS_entry-armv.o   += -no-integrated-as
+
 obj-$(CONFIG_MMU)		+= bugs.o
 obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
 obj-$(CONFIG_ISA_DMA_API)	+= dma.o

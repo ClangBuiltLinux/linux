@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
+AFLAGS_reset-handler.o += -no-integrated-as
 asflags-y				+= -march=armv7-a
 
 obj-y                                   += io.o

@@ -7,7 +7,8 @@
 # ccflags-y := -DDEBUG
 # asflags-y := -DDEBUG
 
-KBUILD_AFLAGS	:=$(KBUILD_AFLAGS:-msoft-float=-Wa,-mfpu=softvfp+vfp -mfloat-abi=soft)
+#KBUILD_AFLAGS	:=$(KBUILD_AFLAGS:-msoft-float=-Wa,-mfpu=softvfp+vfp -mfloat-abi=soft)
 CFLAGS_vfpmodule.o	+=$(call cc-option,-no-integrated-as)
+AFLAGS_vfphw.o	+=$(call cc-option,-no-integrated-as)
 
 obj-y		+= vfpmodule.o entry.o vfphw.o vfpsingle.o vfpdouble.o

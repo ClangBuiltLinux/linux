@@ -16,6 +16,10 @@ lib-y		:= backtrace.o changebit.o csumipv6.o csumpartial.o   \
 		   io-readsb.o io-writesb.o io-readsl.o io-writesl.o  \
 		   call_with_stack.o bswapsdi2.o
 
+AFLAGS_testchangebit.o	:= -no-integrated-as
+AFLAGS_testclearbit.o	:= -no-integrated-as
+AFLAGS_testsetbit.o	:= -no-integrated-as
+
 mmu-y		:= clear_user.o copy_page.o getuser.o putuser.o       \
 		   copy_from_user.o copy_to_user.o
 
