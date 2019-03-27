@@ -195,15 +195,11 @@ struct module;
 #define JUMP_TYPE_LINKED	2UL
 #define JUMP_TYPE_MASK		3UL
 
-static __always_inline bool static_key_false(struct static_key *key)
-{
-	return arch_static_branch(key, false);
-}
+#define static_key_false(key) ({ \
+	arch_static_branch(key, false); })
 
-static __always_inline bool static_key_true(struct static_key *key)
-{
-	return !arch_static_branch(key, true);
-}
+#define static_key_true(key) ({ \
+	!arch_static_branch(key, true); })
 
 extern struct jump_entry __start___jump_table[];
 extern struct jump_entry __stop___jump_table[];
