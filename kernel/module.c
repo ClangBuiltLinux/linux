@@ -2974,11 +2974,21 @@ static int setup_load_info(struct load_info *info, int flags)
 		return -ENOEXEC;
 	}
 
+	/*
+	 * The symbol __this_module was previously in the custom
+	 * .gnu.linkonce.this_module section, but has since been moved to .data.
+	 *
+	 * The check for .gnu.linkonce.this_module can safely removed with the
+	 * passage of time.
+	 */
 	info->index.mod = find_sec(info, ".gnu.linkonce.this_module");
-	if (!info->index.mod) {
-		pr_warn("%s: No module found in object\n",
-			info->name ?: "(missing .modinfo name field)");
-		return -ENOEXEC;
+	if (likely(!info->index.mod)) {
+		info->index.mod = find_sec(info, ".data");
+		if (unlikely(!info->index.mod)) {
+			pr_warn("%s: No module found in object\n",
+				info->name ?: "(missing .modinfo name field)");
+			return -ENOEXEC;
+		}
 	}
 	/* This is temporary: point mod into copy of data. */
 	info->mod = (void *)info->hdr + info->sechdrs[info->index.mod].sh_offset;
