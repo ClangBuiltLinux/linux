@@ -17,18 +17,43 @@
 
 @ fp is 0 or stack frame
 
+ENTRY(c_backtrace)
+
+#if !defined(CONFIG_FRAME_POINTER) || !defined(CONFIG_PRINTK)
+		ret	lr
+ENDPROC(c_backtrace)
+#elif defined(CONFIG_CC_IS_CLANG)
+#define above_frame	r4
+#define current_frame	r5
+
+	push {r4, r5, fp, lr}
+	mov	above_frame, r0
+	add	current_frame, sp, #8
+
+for_each_frame:
+	teq	above_frame, #0		@ zero frame means
+	beq	no_frame		@ no further frames
+
+	ldr	r0, [current_frame, #4]	@ get pc
+	ldr	r1, [above_frame, #4]	@ get saved lr
+	mov	r2, above_frame
+	bl	dump_backtrace_entry
+
+	mov current_frame, above_frame
+	ldr above_frame, [above_frame]
+	b for_each_frame
+
+no_frame:
+	pop {r4, r5, fp, lr}
+	bx lr
+ENDPROC(c_backtrace)
+#else
 #define frame	r4
 #define sv_fp	r5
 #define sv_pc	r6
 #define mask	r7
 #define offset	r8
 
-ENTRY(c_backtrace)
-
-#if !defined(CONFIG_FRAME_POINTER) || !defined(CONFIG_PRINTK)
-		ret	lr
-ENDPROC(c_backtrace)
-#else
 		stmfd	sp!, {r4 - r8, lr}	@ Save an extra register so we have a location...
 		movs	frame, r0		@ if frame pointer is zero
 		beq	no_frame		@ we have no stack frames
@@ -104,7 +129,7 @@ for_each_frame:	tst	frame, mask		@ Check for address exceptions
 		bl	printk
 no_frame:	ldmfd	sp!, {r4 - r8, pc}
 ENDPROC(c_backtrace)
-		
+
 		.pushsection __ex_table,"a"
 		.align	3
 		.long	1001b, 1006b
