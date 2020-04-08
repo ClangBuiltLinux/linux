@@ -272,31 +272,45 @@ void __read_overflow3(void) __compiletime_error("detected read beyond size of ob
 void __write_overflow(void) __compiletime_error("detected write beyond size of object passed as 1st parameter");
 
 #if !defined(__NO_FORTIFY) && defined(__OPTIMIZE__) && defined(CONFIG_FORTIFY_SOURCE)
+
+/*
+ * NOTE: Proof of __builtin___strncpy_chk => strncpy:
+ * https://godbolt.org/z/nA4wVC
+ */
 __FORTIFY_INLINE char *strncpy(char *p, const char *q, __kernel_size_t size)
 {
 	size_t p_size = __builtin_object_size(p, 0);
 	if (__builtin_constant_p(size) && p_size < size)
 		__write_overflow();
-	if (p_size < size)
-		fortify_panic(__func__);
-	return __builtin_strncpy(p, q, size);
+	return __builtin___strncpy_chk(p, q, size, p_size);
 }
 
+/* NOTE: Proof of __strcat_chk => strcat: https://godbolt.org/z/Hquxv9 */
+extern char *__strcat_chk(char *p, const char *q, size_t p_size);
 __FORTIFY_INLINE char *strcat(char *p, const char *q)
 {
 	size_t p_size = __builtin_object_size(p, 0);
-	if (p_size == (size_t)-1)
-		return __builtin_strcat(p, q);
-	if (strlcat(p, q, p_size) >= p_size)
-		fortify_panic(__func__);
-	return p;
+	return __strcat_chk(p, q, p_size);
 }
 
+/*
+ * NOTE: Clang recognizes __strlen_chk, but GCC doesn't. Doesn't seem likely
+ * that we'll get it backported into previous GCC releases, either.
+ * https://godbolt.org/z/Sapi3H .
+ *
+ * Presented is the 'best' middle ground I think we can reach for both
+ * compilers WRT optimizability.
+ */
+#ifdef __clang__
+extern __kernel_size_t __strlen_chk(const char *p, size_t p_size);
+#endif
 __FORTIFY_INLINE __kernel_size_t strlen(const char *p)
 {
-	__kernel_size_t ret;
 	size_t p_size = __builtin_object_size(p, 0);
-
+#ifdef __clang__
+	return __strlen_chk(p, p_size);
+#else
+	__kernel_size_t ret;
 	/* Work around gcc excess stack consumption issue */
 	if (p_size == (size_t)-1 ||
 	    (__builtin_constant_p(p[p_size - 1]) && p[p_size - 1] == '\0'))
@@ -305,6 +319,7 @@ __FORTIFY_INLINE __kernel_size_t strlen(const char *p)
 	if (p_size <= ret)
 		fortify_panic(__func__);
 	return ret;
+#endif
 }
 
 extern __kernel_size_t __real_strnlen(const char *, __kernel_size_t) __RENAME(strnlen);
@@ -317,6 +332,14 @@ __FORTIFY_INLINE __kernel_size_t strnlen(const char *p, __kernel_size_t maxlen)
 	return ret;
 }
 
+/*
+ * NOTE: Clang recognizes __strlcpy_chk, but GCC doesn't. Doesn't seem likely
+ * that we'll get it backported into previous GCC releases, either.
+ * https://godbolt.org/z/RsTLtV .
+ *
+ * I'm not sure how deeply we care about strlcpy optimizations. Maybe not enough
+ * to have compiler-specific code for this handrolled strlcpy?
+ */
 /* defined after fortified strlen to reuse it */
 extern size_t __real_strlcpy(char *, const char *, size_t) __RENAME(strlcpy);
 __FORTIFY_INLINE size_t strlcpy(char *p, const char *q, size_t size)
@@ -361,9 +384,7 @@ __FORTIFY_INLINE void *memset(void *p, int c, __kernel_size_t size)
 	size_t p_size = __builtin_object_size(p, 0);
 	if (__builtin_constant_p(size) && p_size < size)
 		__write_overflow();
-	if (p_size < size)
-		fortify_panic(__func__);
-	return __builtin_memset(p, c, size);
+	return __builtin___memset_chk(p, c, size, p_size);
 }
 
 __FORTIFY_INLINE void *memcpy(void *p, const void *q, __kernel_size_t size)
@@ -376,9 +397,9 @@ __FORTIFY_INLINE void *memcpy(void *p, const void *q, __kernel_size_t size)
 		if (q_size < size)
 			__read_overflow2();
 	}
-	if (p_size < size || q_size < size)
+	if (q_size < size)
 		fortify_panic(__func__);
-	return __builtin_memcpy(p, q, size);
+	return __builtin___memcpy_chk(p, q, size, p_size);
 }
 
 __FORTIFY_INLINE void *memmove(void *p, const void *q, __kernel_size_t size)
@@ -391,9 +412,9 @@ __FORTIFY_INLINE void *memmove(void *p, const void *q, __kernel_size_t size)
 		if (q_size < size)
 			__read_overflow2();
 	}
-	if (p_size < size || q_size < size)
+	if (q_size < size)
 		fortify_panic(__func__);
-	return __builtin_memmove(p, q, size);
+	return __builtin___memmove_chk(p, q, size, p_size);
 }
 
 extern void *__real_memscan(void *, int, __kernel_size_t) __RENAME(memscan);
