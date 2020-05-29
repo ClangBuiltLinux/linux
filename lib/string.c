@@ -126,6 +126,14 @@ char *strncpy(char *dest, const char *src, size_t count)
 EXPORT_SYMBOL(strncpy);
 #endif
 
+char *__strncpy_chk(char *dest, const char *src, size_t count, size_t dest_size)
+{
+	if (unlikely(dest_size < count))
+		fortify_panic(__func__);
+	return __builtin_strncpy(dest, src, count);
+}
+EXPORT_SYMBOL(__strncpy_chk);
+
 #ifndef __HAVE_ARCH_STRLCPY
 /**
  * strlcpy - Copy a C-string into a sized buffer
@@ -291,6 +299,14 @@ char *strcat(char *dest, const char *src)
 }
 EXPORT_SYMBOL(strcat);
 #endif
+
+char *__strcat_chk(char *dest, const char *src, size_t p_size)
+{
+	if (unlikely(strlcat(dest, src, p_size) >= p_size))
+		fortify_panic(__func__);
+	return dest;
+}
+EXPORT_SYMBOL(__strcat_chk);
 
 #ifndef __HAVE_ARCH_STRNCAT
 /**
@@ -548,6 +564,17 @@ size_t strlen(const char *s)
 EXPORT_SYMBOL(strlen);
 #endif
 
+#ifdef __clang__
+size_t __strlen_chk(const char *p, size_t p_size)
+{
+	__kernel_size_t ret = __real_strnlen(p, p_size);
+	if (unlikely(p_size <= ret))
+		fortify_panic(__func__);
+	return ret;
+}
+EXPORT_SYMBOL(__strlen_chk);
+#endif
+
 #ifndef __HAVE_ARCH_STRNLEN
 /**
  * strnlen - Find the length of a length-limited string
@@ -781,6 +808,14 @@ void *memset(void *s, int c, size_t count)
 EXPORT_SYMBOL(memset);
 #endif
 
+void *__memset_chk(void *s, int c, size_t count, size_t s_size)
+{
+	if (unlikely(s_size < count))
+		fortify_panic(__func__);
+	return __builtin_memset(s, c, count);
+}
+EXPORT_SYMBOL(__memset_chk);
+
 #ifndef __HAVE_ARCH_MEMSET16
 /**
  * memset16() - Fill a memory area with a uint16_t
@@ -869,6 +904,14 @@ void *memcpy(void *dest, const void *src, size_t count)
 EXPORT_SYMBOL(memcpy);
 #endif
 
+void *__memcpy_chk(void *dest, const void *src, size_t count, size_t dest_size)
+{
+	if (unlikely(dest_size) < count)
+		fortify_panic(__func__);
+	return __builtin_memcpy(dest, src, count);
+}
+EXPORT_SYMBOL(__memcpy_chk);
+
 #ifndef __HAVE_ARCH_MEMMOVE
 /**
  * memmove - Copy one area of memory to another
@@ -900,6 +943,14 @@ void *memmove(void *dest, const void *src, size_t count)
 }
 EXPORT_SYMBOL(memmove);
 #endif
+
+void *__memmove_chk(void *dest, const void *src, size_t count, size_t dest_size)
+{
+	if (unlikely(dest_size < count))
+		fortify_panic(__func__);
+	return __builtin_memmove(dest, src, count);
+}
+EXPORT_SYMBOL(__memmove_chk);
 
 #ifndef __HAVE_ARCH_MEMCMP
 /**
