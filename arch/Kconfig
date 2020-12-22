@@ -1106,6 +1106,7 @@ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
 	bool
 
 source "kernel/gcov/Kconfig"
+source "kernel/pgo/Kconfig"
 
 source "scripts/gcc-plugins/Kconfig"
 
