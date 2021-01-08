@@ -66,8 +66,10 @@ KBUILD_CFLAGS += $(cpuflags-y)
 KBUILD_CFLAGS += -pipe -ffreestanding
 
 ifdef CONFIG_MMU
-# without -fno-strength-reduce the 53c7xx.c driver fails ;-(
-KBUILD_CFLAGS += -fno-strength-reduce -ffixed-a2
+  ifndef CONFIG_CC_IS_CLANG
+    # without -fno-strength-reduce the 53c7xx.c driver fails ;-(
+    KBUILD_CFLAGS += -fno-strength-reduce -ffixed-a2
+  endif
 else
 # we can use a m68k-linux-gcc toolchain with these in place
 KBUILD_CPPFLAGS += -DUTS_SYSNAME=\"uClinux\"
