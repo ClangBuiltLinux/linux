@@ -120,14 +120,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
  */
 #define __stringify_label(n) #n
 
-#define __annotate_reachable(c) ({					\
-	asm (__stringify_label(c) ":\n\t"				\
-		     ".pushsection .discard.reachable\n\t"		\
-		     ".long " __stringify_label(c) "b - .\n\t"		\
-		     ".popsection" ::: "memory");			\
-})
-#define annotate_reachable() __annotate_reachable(__COUNTER__)
-
 #define __annotate_unreachable(c) ({					\
 	asm (__stringify_label(c) ":\n\t"				\
 		     ".pushsection .discard.unreachable\n\t"		\
@@ -135,6 +127,12 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 		     ".popsection" ::: "memory");			\
 })
 #define annotate_unreachable() __annotate_unreachable(__COUNTER__)
+
+#define ASM_REACHABLE							\
+	"998:\n\t"							\
+	".pushsection .discard.reachable\n\t"				\
+	".long 998b - .\n\t"						\
+	".popsection\n\t"
 
 #define ASM_UNREACHABLE							\
 	"999:\n\t"							\
@@ -146,11 +144,13 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #define __annotate_jump_table __section(".rodata..c_jump_table")
 
 #else
-#define annotate_reachable()
 #define annotate_unreachable()
 #define __annotate_jump_table
 #endif
 
+#ifndef ASM_REACHABLE
+# define ASM_REACHABLE
+#endif
 #ifndef ASM_UNREACHABLE
 # define ASM_UNREACHABLE
 #endif
