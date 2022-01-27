@@ -112,8 +112,11 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #ifdef CONFIG_STACK_VALIDATION
 /*
  * These macros help objtool understand GCC code flow for unreachable code.
- * The __COUNTER__ based labels are a hack to make each instance of the macros
- * unique, to convince GCC not to merge duplicate inline asm statements.
+ * The __COUNTER__ based labels are to make each instance of the macros unique,
+ * to convince GCC not to merge duplicate inline asm statements. This was
+ * recommended by GCC developers in
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104236#c4. %= output templates
+ * are not a substitute to prevent asm statements from appearing as duplicates.
  */
 #define __stringify_label(n) #n
 
