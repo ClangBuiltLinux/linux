@@ -129,15 +129,15 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #define annotate_unreachable() __annotate_unreachable(__COUNTER__)
 
 #define ASM_REACHABLE							\
-	"998:\n\t"							\
+	".Lreachable%=:\n\t"						\
 	".pushsection .discard.reachable\n\t"				\
-	".long 998b - .\n\t"						\
+	".long .Lreachable%= - .\n\t"					\
 	".popsection\n\t"
 
 #define ASM_UNREACHABLE							\
-	"999:\n\t"							\
+	".Lunreachable%=:\n\t"						\
 	".pushsection .discard.unreachable\n\t"				\
-	".long 999b - .\n\t"						\
+	".long .Lunreachable%= - .\n\t"					\
 	".popsection\n\t"
 
 /* Annotate a C jump table to allow objtool to follow the code flow */
@@ -145,15 +145,11 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 
 #else
 #define annotate_unreachable()
+#define ASM_REACHABLE
+#define ASM_UNREACHABLE
 #define __annotate_jump_table
 #endif
 
-#ifndef ASM_REACHABLE
-# define ASM_REACHABLE
-#endif
-#ifndef ASM_UNREACHABLE
-# define ASM_UNREACHABLE
-#endif
 #ifndef unreachable
 # define unreachable() do {		\
 	annotate_unreachable();		\
