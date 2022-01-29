@@ -8,7 +8,6 @@
 /*
  * Despite that some emulators terminate on UD2, we use it for WARN().
  */
-#define ASM_UD2		".byte 0x0f, 0x0b"
 #define INSN_UD2	0x0b0f
 #define LEN_UD2		2
 
@@ -22,9 +21,9 @@
 
 #ifdef CONFIG_DEBUG_BUGVERBOSE
 
-#define _BUG_FLAGS(ins, flags, extra)					\
+#define _BUG_FLAGS(flags, extra)					\
 do {									\
-	asm_inline ("1:\t" ins "\n"					\
+	asm_inline ("1:\tud2a\n"					\
 		     ".pushsection __bug_table,\"aw\"\n"		\
 		     "2:\t" __BUG_REL(1b) "\t# bug_entry::bug_addr\n"	\
 		     "\t"  __BUG_REL(%c0) "\t# bug_entry::file\n"	\
@@ -40,9 +39,9 @@ do {									\
 
 #else /* !CONFIG_DEBUG_BUGVERBOSE */
 
-#define _BUG_FLAGS(ins, flags, extra)					\
+#define _BUG_FLAGS(flags, extra)					\
 do {									\
-	asm_inline ("1:\t" ins "\n"					\
+	asm_inline ("1:\tud2a\n"					\
 		     ".pushsection __bug_table,\"aw\"\n"		\
 		     "2:\t" __BUG_REL(1b) "\t# bug_entry::bug_addr\n"	\
 		     "\t.word %c0"        "\t# bug_entry::flags\n"	\
@@ -57,21 +56,21 @@ do {									\
 
 #else
 
-#define _BUG_FLAGS(ins, flags, extra)  asm (ins)
+#define _BUG_FLAGS(flags, extra)  asm ("ud2a")
 
 #endif /* CONFIG_GENERIC_BUG */
 
 #define HAVE_ARCH_BUG
 #define BUG()							\
 do {								\
-	_BUG_FLAGS(ASM_UD2, 0, ASM_UNREACHABLE);		\
+	_BUG_FLAGS(0, ASM_UNREACHABLE);				\
 	__builtin_unreachable();				\
 } while (0)
 
 #define __WARN_FLAGS(flags)					\
 do {								\
 	__auto_type f = BUGFLAG_WARNING|(flags);		\
-	_BUG_FLAGS(ASM_UD2, f, ASM_REACHABLE);			\
+	_BUG_FLAGS(f, ASM_REACHABLE);				\
 } while (0)
 
 #include <asm-generic/bug.h>
