@@ -8,10 +8,10 @@
 
 /* Begin/end of an instrumentation safe region */
 #define __instrumentation_begin(c) ({					\
-	asm volatile(__stringify(c) ": nop\n\t"				\
+	asm (__stringify(c) ": nop\n\t"					\
 		     ".pushsection .discard.instr_begin\n\t"		\
 		     ".long " __stringify(c) "b - .\n\t"		\
-		     ".popsection\n\t" : : "i" (c));			\
+		     ".popsection" ::: "memory");			\
 })
 #define instrumentation_begin() __instrumentation_begin(__COUNTER__)
 
@@ -47,10 +47,10 @@
  * part of the condition block and does not escape.
  */
 #define __instrumentation_end(c) ({					\
-	asm volatile(__stringify(c) ": nop\n\t"				\
+	asm (__stringify(c) ": nop\n\t"					\
 		     ".pushsection .discard.instr_end\n\t"		\
 		     ".long " __stringify(c) "b - .\n\t"		\
-		     ".popsection\n\t" : : "i" (c));			\
+		     ".popsection" ::: "memory");			\
 })
 #define instrumentation_end() __instrumentation_end(__COUNTER__)
 #else
