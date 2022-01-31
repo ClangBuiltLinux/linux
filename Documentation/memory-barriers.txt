@@ -1726,6 +1726,30 @@ of optimizations:
      respect the order in which the READ_ONCE()s and WRITE_ONCE()s occur,
      though the CPU of course need not do so.
 
+ (*) Similarly, the compiler is within its rights to reorder instructions
+     around an asm statement so long as clobbers are not violated. For example,
+
+	asm volatile ("");
+	flag = true;
+
+     May be modified by the compiler to:
+
+	flag = true;
+	asm volatile ("");
+
+     Marking an asm statement as volatile is not a substitute for barrier(),
+     and is implicit for asm goto statements and asm statements that do not
+     have outputs (like the above example). Prefer either:
+
+	asm ("":::"memory");
+	flag = true;
+
+     Or:
+
+	asm ("");
+	barrier();
+	flag = true;
+
  (*) The compiler is within its rights to invent stores to a variable,
      as in the following example:
 

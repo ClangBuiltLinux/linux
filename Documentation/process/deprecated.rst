@@ -329,3 +329,20 @@ struct_size() and flex_array_size() helpers::
         instance->count = count;
 
         memcpy(instance->items, source, flex_array_size(instance, items, instance->count));
+
+Volatile Qualified asm Statements
+=================================
+
+According to `the GCC docs on inline asm
+https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Volatile`_:
+
+  asm statements that have no output operands and asm goto statements,
+  are implicitly volatile.
+
+For many uses of asm statements, that means adding a volatile qualifier won't
+hurt (making the implicit explicit), but it will not strengthen the semantics
+for such cases where it would have been implied. Care should be taken not to
+confuse ``volatile`` with the kernel's ``barrier()`` macro or an explicit
+clobber list. See [memory-barriers]_ for more info on ``barrier()``.
+
+.. [memory-barriers] Documentation/memory-barriers.txt
