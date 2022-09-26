@@ -24,8 +24,8 @@
  * However, those are only generated if CONFIG_RELOCATABLE=y.
  */
 
-#include <elf.h>
-#include <endian.h>
+#include <gelf.h>
+#include <machine/endian.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>

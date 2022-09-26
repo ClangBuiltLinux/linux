@@ -3,6 +3,12 @@ OBJECT_FILES_NON_STANDARD := y
 CFLAGS_REMOVE_empty.o += $(CC_FLAGS_LTO)
 
 hostprogs-always-y	+= modpost mk_elfconfig
+libelf_flags	:= $(shell $(HOSTPKG_CONFIG) --cflags libelf)
+HOSTCFLAGS_mk_elfconfig.o	+= $(libelf_flags)
+HOSTCFLAGS_modpost.o	+= $(libelf_flags) -include $(obj)/elf_helper.h
+HOSTCFLAGS_sumversion.o	+= $(libelf_flags)
+#HOSTCFLAGS_file2alias.o	+= $(libelf_flags) -U_FORTIFY_SOURCE
+HOSTCFLAGS_file2alias.o	+= $(libelf_flags) -D_FORTIFY_SOURCE=0
 always-y		+= empty.o
 
 modpost-objs	:= modpost.o file2alias.o sumversion.o

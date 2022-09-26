@@ -1,0 +1,2 @@
+#define EF_ARM_EABIMASK 0XFF000000
+#define EF_ARM_EABI_VERSION(flags) ((flags) & EF_ARM_EABIMASK)

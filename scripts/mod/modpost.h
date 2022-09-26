@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <elf.h>
+#include <gelf.h>
 
 #include "list.h"
 #include "elfconfig.h"

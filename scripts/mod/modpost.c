@@ -12,7 +12,7 @@
  */
 
 #define _GNU_SOURCE
-#include <elf.h>
+#include <gelf.h>
 #include <fnmatch.h>
 #include <stdio.h>
 #include <ctype.h>

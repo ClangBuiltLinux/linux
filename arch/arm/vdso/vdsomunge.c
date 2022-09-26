@@ -32,7 +32,7 @@
  * it does.
  */
 
-#include <elf.h>
+#include <gelf.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>

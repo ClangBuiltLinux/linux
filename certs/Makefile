@@ -85,4 +85,6 @@ targets += x509_revocation_list
 hostprogs := extract-cert
 
 HOSTCFLAGS_extract-cert.o = $(shell $(HOSTPKG_CONFIG) --cflags libcrypto 2> /dev/null)
+HOSTCFLAGS_extract-cert.o += -I/opt/homebrew/opt/openssl@3/include
+HOSTCFLAGS_extract-cert.o += -L/opt/homebrew/opt/openssl@3/lib
 HOSTLDLIBS_extract-cert = $(shell $(HOSTPKG_CONFIG) --libs libcrypto 2> /dev/null || echo -lcrypto)
