@@ -1298,17 +1298,10 @@ drm_atomic_get_old_crtc_for_encoder(struct drm_atomic_commit *state,
 				    struct drm_encoder *encoder)
 {
 	struct drm_connector *connector;
-	struct drm_connector_state *conn_state;
 
-	connector = drm_atomic_get_old_connector_for_encoder(state, encoder);
-	if (!connector)
-		return NULL;
+	connector = drm_atomic_get_old_connector_for_encoder(state, encoder)?;
 
-	conn_state = drm_atomic_get_old_connector_state(state, connector);
-	if (!conn_state)
-		return NULL;
-
-	return conn_state->crtc;
+	return drm_atomic_get_old_connector_state(state, connector)?->crtc;
 }
 EXPORT_SYMBOL(drm_atomic_get_old_crtc_for_encoder);
 
@@ -1328,17 +1321,10 @@ drm_atomic_get_new_crtc_for_encoder(struct drm_atomic_commit *state,
 				    struct drm_encoder *encoder)
 {
 	struct drm_connector *connector;
-	struct drm_connector_state *conn_state;
 
-	connector = drm_atomic_get_new_connector_for_encoder(state, encoder);
-	if (!connector)
-		return NULL;
+	connector = drm_atomic_get_new_connector_for_encoder(state, encoder)?;
 
-	conn_state = drm_atomic_get_new_connector_state(state, connector);
-	if (!conn_state)
-		return NULL;
-
-	return conn_state->crtc;
+	return drm_atomic_get_new_connector_state(state, connector)?->crtc;
 }
 EXPORT_SYMBOL(drm_atomic_get_new_crtc_for_encoder);
 
