@@ -85,17 +85,9 @@ int vfs_truncate(const struct path *path, loff_t length)
 		return -EINVAL;
 
 	idmap = mnt_idmap(path->mnt);
-	error = inode_permission(idmap, inode, MAY_WRITE);
-	if (error)
-		return error;
-
-	error = fsnotify_truncate_perm(path, length);
-	if (error)
-		return error;
-
-	error = mnt_want_write(path->mnt);
-	if (error)
-		return error;
+	inode_permission(idmap, inode, MAY_WRITE)?;
+	fsnotify_truncate_perm(path, length)?;
+	mnt_want_write(path->mnt)?;
 
 	error = -EPERM;
 	if (IS_APPEND(inode))
@@ -165,7 +157,6 @@ int do_ftruncate(struct file *file, loff_t length, unsigned int flags)
 {
 	struct dentry *dentry = file->f_path.dentry;
 	struct inode *inode = dentry->d_inode;
-	int error;
 
 	if (!S_ISREG(inode->i_mode) || !(file->f_mode & FMODE_WRITE))
 		return -EINVAL;
@@ -182,13 +173,8 @@ int do_ftruncate(struct file *file, loff_t length, unsigned int flags)
 	if (IS_APPEND(file_inode(file)))
 		return -EPERM;
 
-	error = security_file_truncate(file);
-	if (error)
-		return error;
-
-	error = fsnotify_truncate_perm(&file->f_path, length);
-	if (error)
-		return error;
+	security_file_truncate(file)?;
+	fsnotify_truncate_perm(&file->f_path, length)?;
 
 	scoped_guard(super_write, inode->i_sb)
 		return do_truncate(file_mnt_idmap(file), dentry, length,
@@ -671,9 +657,7 @@ int chmod_common(const struct path *path, umode_t mode)
 	struct iattr newattrs;
 	int error;
 
-	error = mnt_want_write(path->mnt);
-	if (error)
-		return error;
+	mnt_want_write(path->mnt)?;
 retry_deleg:
 	error = inode_lock_killable(inode);
 	if (error)
