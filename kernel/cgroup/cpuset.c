@@ -3753,7 +3753,6 @@ static int cpuset_can_fork(struct task_struct *task, struct css_set *cset)
 {
 	struct cpuset *cs = css_cs(cset->subsys[cpuset_cgrp_id]);
 	bool same_cs;
-	int ret;
 
 	rcu_read_lock();
 	same_cs = (cs == task_cs(current));
@@ -3763,25 +3762,15 @@ static int cpuset_can_fork(struct task_struct *task, struct css_set *cset)
 		return 0;
 
 	lockdep_assert_held(&cgroup_mutex);
-	mutex_lock(&cpuset_mutex);
+	guard(mutex)(&cpuset_mutex);
 
 	/* Check to see if task is allowed in the cpuset */
-	ret = cpuset_can_attach_check(cs, NULL, NULL);
-	if (ret)
-		goto out_unlock;
-
-	ret = task_can_attach(task);
-	if (ret)
-		goto out_unlock;
-
-	ret = security_task_setscheduler(task);
-	if (ret)
-		goto out_unlock;
+	cpuset_can_attach_check(cs, NULL, NULL)?;
+	task_can_attach(task)?;
+	security_task_setscheduler(task)?;
 
 	attach_ctx.in_progress++;
-out_unlock:
-	mutex_unlock(&cpuset_mutex);
-	return ret;
+	return 0;
 }
 
 static void cpuset_cancel_fork(struct task_struct *task, struct css_set *cset)
