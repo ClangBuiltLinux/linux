@@ -397,7 +397,6 @@ int ndr_encode_posix_acl(struct ndr *n,
 int ndr_encode_v4_ntacl(struct ndr *n, struct xattr_ntacl *acl)
 {
 	unsigned int ref_id = 0x00020004;
-	int ret;
 
 	n->offset = 0;
 	n->length = 2048;
@@ -405,65 +404,34 @@ int ndr_encode_v4_ntacl(struct ndr *n, struct xattr_ntacl *acl)
 	if (!n->data)
 		return -ENOMEM;
 
-	ret = ndr_write_int16(n, acl->version);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_int32(n, acl->version);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_int16(n, 2);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_int32(n, ref_id);
-	if (ret)
-		return ret;
+	ndr_write_int16(n, acl->version)?;
+	ndr_write_int32(n, acl->version)?;
+	ndr_write_int16(n, 2)?;
+	ndr_write_int32(n, ref_id)?;
 
 	/* push hash type and hash 64bytes */
-	ret = ndr_write_int16(n, acl->hash_type);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_bytes(n, acl->hash, XATTR_SD_HASH_SIZE);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_bytes(n, acl->desc, acl->desc_len);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_int64(n, acl->current_time);
-	if (ret)
-		return ret;
-
-	ret = ndr_write_bytes(n, acl->posix_acl_hash, XATTR_SD_HASH_SIZE);
-	if (ret)
-		return ret;
+	ndr_write_int16(n, acl->hash_type)?;
+	ndr_write_bytes(n, acl->hash, XATTR_SD_HASH_SIZE)?;
+	ndr_write_bytes(n, acl->desc, acl->desc_len)?;
+	ndr_write_int64(n, acl->current_time)?;
+	ndr_write_bytes(n, acl->posix_acl_hash, XATTR_SD_HASH_SIZE)?;
 
 	/* push ndr for security descriptor */
-	ret = ndr_write_bytes(n, acl->sd_buf, acl->sd_size);
-	return ret;
+	return ndr_write_bytes(n, acl->sd_buf, acl->sd_size)?;
 }
 
 int ndr_decode_v4_ntacl(struct ndr *n, struct xattr_ntacl *acl)
 {
 	unsigned int version2;
-	int ret;
 
 	n->offset = 0;
-	ret = ndr_read_int16(n, &acl->version);
-	if (ret)
-		return ret;
+	ndr_read_int16(n, &acl->version)?;
 	if (acl->version != 4) {
 		ksmbd_debug(VFS, "v%d version is not supported\n", acl->version);
 		return -EINVAL;
 	}
 
-	ret = ndr_read_int32(n, &version2);
-	if (ret)
-		return ret;
+	ndr_read_int32(n, &version2)?;
 	if (acl->version != version2) {
 		ksmbd_debug(VFS, "ndr version mismatched(version: %d, version2: %d)\n",
 		       acl->version, version2);
@@ -471,22 +439,13 @@ int ndr_decode_v4_ntacl(struct ndr *n, struct xattr_ntacl *acl)
 	}
 
 	/* Read Level */
-	ret = ndr_read_int16(n, NULL);
-	if (ret)
-		return ret;
+	ndr_read_int16(n, NULL)?;
 
 	/* Read Ref Id */
-	ret = ndr_read_int32(n, NULL);
-	if (ret)
-		return ret;
+	ndr_read_int32(n, NULL)?;
 
-	ret = ndr_read_int16(n, &acl->hash_type);
-	if (ret)
-		return ret;
-
-	ret = ndr_read_bytes(n, acl->hash, XATTR_SD_HASH_SIZE);
-	if (ret)
-		return ret;
+	ndr_read_int16(n, &acl->hash_type)?;
+	ndr_read_bytes(n, acl->hash, XATTR_SD_HASH_SIZE)?;
 
 	ndr_read_bytes(n, acl->desc, 10);
 	if (strncmp(acl->desc, "posix_acl", 9)) {
@@ -495,20 +454,15 @@ int ndr_decode_v4_ntacl(struct ndr *n, struct xattr_ntacl *acl)
 	}
 
 	/* Read Time */
-	ret = ndr_read_int64(n, NULL);
-	if (ret)
-		return ret;
+	ndr_read_int64(n, NULL)?;
 
 	/* Read Posix ACL hash */
-	ret = ndr_read_bytes(n, acl->posix_acl_hash, XATTR_SD_HASH_SIZE);
-	if (ret)
-		return ret;
+	ndr_read_bytes(n, acl->posix_acl_hash, XATTR_SD_HASH_SIZE)?;
 
 	acl->sd_size = n->length - n->offset;
 	acl->sd_buf = kzalloc(acl->sd_size, KSMBD_DEFAULT_GFP);
 	if (!acl->sd_buf)
 		return -ENOMEM;
 
-	ret = ndr_read_bytes(n, acl->sd_buf, acl->sd_size);
-	return ret;
+	return ndr_read_bytes(n, acl->sd_buf, acl->sd_size)?;
 }
