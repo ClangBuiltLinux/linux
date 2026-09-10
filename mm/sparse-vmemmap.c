@@ -183,10 +183,8 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
 
 static void * __meminit vmemmap_alloc_block_zero(unsigned long size, int node)
 {
-	void *p = vmemmap_alloc_block(size, node);
+	void *p = vmemmap_alloc_block(size, node)?;
 
-	if (!p)
-		return NULL;
 	memset(p, 0, size);
 
 	return p;
@@ -196,9 +194,7 @@ static pmd_t * __meminit vmemmap_pmd_populate(pud_t *pud, unsigned long addr, in
 {
 	pmd_t *pmd = pmd_offset(pud, addr);
 	if (pmd_none(*pmd)) {
-		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
-		if (!p)
-			return NULL;
+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node)?;
 		kernel_pte_init(p);
 		pmd_populate_kernel(&init_mm, pmd, p);
 	}
@@ -209,9 +205,7 @@ static pud_t * __meminit vmemmap_pud_populate(p4d_t *p4d, unsigned long addr, in
 {
 	pud_t *pud = pud_offset(p4d, addr);
 	if (pud_none(*pud)) {
-		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
-		if (!p)
-			return NULL;
+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node)?;
 		pmd_init(p);
 		pud_populate(&init_mm, pud, p);
 	}
@@ -222,9 +216,7 @@ static p4d_t * __meminit vmemmap_p4d_populate(pgd_t *pgd, unsigned long addr, in
 {
 	p4d_t *p4d = p4d_offset(pgd, addr);
 	if (p4d_none(*p4d)) {
-		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
-		if (!p)
-			return NULL;
+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node)?;
 		pud_init(p);
 		p4d_populate_kernel(addr, p4d, p);
 	}
@@ -235,9 +227,7 @@ static pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
 {
 	pgd_t *pgd = pgd_offset_k(addr);
 	if (pgd_none(*pgd)) {
-		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
-		if (!p)
-			return NULL;
+		void *p = vmemmap_alloc_block_zero(PAGE_SIZE, node)?;
 		pgd_populate_kernel(addr, pgd, p);
 	}
 	return pgd;
@@ -248,27 +238,12 @@ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
 					      unsigned long ptpfn,
 					      unsigned long flags)
 {
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
+	pgd_t *pgd = vmemmap_pgd_populate(addr, node)?;
+	p4d_t *p4d = vmemmap_p4d_populate(pgd, addr, node)?;
+	pud_t *pud = vmemmap_pud_populate(p4d, addr, node)?;
+	pmd_t *pmd = vmemmap_pmd_populate(pud, addr, node)?;
+	pte_t *pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn, flags)?;
 
-	pgd = vmemmap_pgd_populate(addr, node);
-	if (!pgd)
-		return NULL;
-	p4d = vmemmap_p4d_populate(pgd, addr, node);
-	if (!p4d)
-		return NULL;
-	pud = vmemmap_pud_populate(p4d, addr, node);
-	if (!pud)
-		return NULL;
-	pmd = vmemmap_pmd_populate(pud, addr, node);
-	if (!pmd)
-		return NULL;
-	pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn, flags);
-	if (!pte)
-		return NULL;
 	vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
 
 	return pte;
